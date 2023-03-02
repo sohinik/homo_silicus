@@ -1,0 +1,3 @@
+from skar.examples.charness_rabin import run_experiment_charness_rabin
+
+run_experiment_charness_rabin()

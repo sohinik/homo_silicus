@@ -4,12 +4,28 @@ from skar.subject.subject import Subject
 
 
 class Experiment:
+    """
+    The Experiment class holds all rounds, subjects, and endowments, and combines these
+    iteratively to build all of the possible experiment prompts.
+
+    Args:
+        introduction (str): Introductory information
+        rounds (list of Round): Rounds to iterate on
+        subjects (list of Subject): Premade subjects for experiment, where each subject will
+            participate in every round
+        num_subjects (str): Number of subjects, should be same as length of subjects list
+        endowments (list of endowments): Available endowments for the entire experiment
+    """
+
     def __init__(self, introduction="", rounds=[], subjects=[], num_subjects=0, endowments=[]):
         self._introduction = introduction
         self._rounds = rounds
         self._subjects = subjects
         self._num_subjects = num_subjects
+        assert self._num_subjects == len(self._subjects)
         self._endowments = endowments
+
+    # Methods to manually add additional subjects and rounds after initialization
 
     def add_subject(self):
         self._subjects.append(Subject(self._num_subjects))
@@ -27,13 +43,15 @@ class Experiment:
     def add_round(self, round):
         self._rounds.append(round)
 
-    def add_round(self, task, choices, instruction=None):
-        self._rounds.append(Round(task, choices, instruction))
+    def add_round(self, task, choices, transition=None, instruction=None):
+        self._rounds.append(Round(task, choices, transition, instruction))
 
     def generate_experiment_prompt(self):
+        '''
+        Generate all the possible experiment prompts, combining each of the subjects with
+        each of the rounds.
+        '''
         all_experiment_prompts = []
-        # print("self._subjects", self._subjects)
-        # print("self._rounds", self._rounds)
 
         experiment_prompt = self._introduction + "\n"
         for s in self._subjects:

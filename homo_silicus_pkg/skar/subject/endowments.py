@@ -1,4 +1,16 @@
 class Endowments:
+    """
+    The Endowments class holds all the available parameters used to set an AI subject's personality.
+    An individual AI subject will have some combination of the given attributes.
+
+    Args:
+        ages (list of int): Age
+        genders (list of str): Gender
+        races (list of str): Race
+        incomes (list of int or str): Income
+        political (list of str): Political alignment
+    """
+
     def __init__(self, ages=None, genders=None, races=None, incomes=None, political=None):
         self._parameter_id = 0
         self._ages, self._genders, self._races, self._incomes, self._political = None, None, None, None, None
@@ -19,6 +31,8 @@ class Endowments:
 
     def increment_parameter_id(self):
         self._parameter_id = self._parameter_id + 1
+
+    # Methods to manually set different attributes after initialization
 
     def set_ages(self, ages):
         self._ages = ages
@@ -52,24 +66,28 @@ class Endowments:
         # self._available_parameters["additional_parameters"][name] = parameters
         self._available_parameters[name] = parameters
 
+    # Methods to get endowments
+
     def yield_endowments(self, current_endowment={}, iterated_parameters=[]):
-        # print("yield_endowmenets", current_endowment)
-        # print("_available_parameters", self._available_parameters)
-        # print("len(self._available_parameters)", len(self._available_parameters))
-        # print("len(iterated_parameters)", len(iterated_parameters))
+        '''
+        Recursively yield individual endowments from all available parameters
+
+        Args:
+            current_endowment (Endowment or dict): Endowment
+            iterated_parameters (list): Parameters that have already been added
+
+        Returns:
+            none
+        '''
         if len(iterated_parameters) == len(self._available_parameters):
-            # print("yield_endowmenets 1", current_endowment)
             yield Endowment(current_endowment)
         else:
             next_parameter = list(
                 set(self._available_parameters.keys()) - set(iterated_parameters))[0]
-            # print("next_parameter", next_parameter)
             iterated_parameters.append(next_parameter)
             for i in self._available_parameters[next_parameter]:
-                # print("i", i)
                 temp_current_endowment = current_endowment.copy()
                 temp_current_endowment[next_parameter] = i
-                # print("temp_current_endowment", temp_current_endowment)
                 yield from self.yield_endowments(
                     temp_current_endowment, iterated_parameters)
 
@@ -78,6 +96,14 @@ class Endowments:
 
 
 class Endowment:
+    """
+    The Endowment class holds the parameters used to set an individual AI subject's personality and
+    attributes.
+
+    Args:
+        endowment (Endowment or dict): Endowment
+    """
+
     def __init__(self, endowment={}):
         self._endowment = endowment
         self._available_parameters = list(endowment.keys())

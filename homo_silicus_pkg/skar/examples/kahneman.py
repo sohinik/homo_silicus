@@ -1,6 +1,7 @@
 from skar.experiment.experiment import Experiment
 from skar.experiment.round import Round
 from skar.model import Model
+from skar.results.numbers import *
 from skar.subject.endowments import Endowments
 
 """
@@ -24,7 +25,7 @@ political = [
     "leftist",
     "liberal",
     "moderate",
-    "liberterian", 
+    "liberterian",
     "conservative",
 ]
 
@@ -34,7 +35,8 @@ scenarios_storeaction = ["changes the price to", "raises the price to"]
 scenarios_newprice = [16, 20, 40, 100]
 for action in scenarios_storeaction:
     for price in scenarios_newprice:
-        all_tasks.append(f"""A hardware store has been selling snow shovels for $15. The morning after a large snowstorm, the store {action} ${price}.""")
+        all_tasks.append(
+            f"""A hardware store has been selling snow shovels for $15. The morning after a large snowstorm, the store {action} ${price}.""")
 
 all_choices = ["Completely Fair", "Acceptable", "Unfair", "Very Unfair"]
 
@@ -47,7 +49,8 @@ def run_experiment_kkt():
     experiment = Experiment()
 
     for t in all_tasks:
-        experiment.add_round(task=t, choices=all_choices)
+        experiment.make_round(task=t, choices=all_choices,
+                              instruction="Please rate this action as:")
 
     endowments = Endowments(political=political)
 
@@ -56,14 +59,20 @@ def run_experiment_kkt():
     prompts = experiment.generate_experiment_prompt()
 
     # Run prompts and print corresponding results
-    for p in prompts:
+    for p,r in prompts:
         print(p)
-        print([i["choice_text"] for i in model.run_prompt(p)])
-        print("-----------------------------------------------")
-        if len(finals[-1]) >= len(scenarios_newprice):
-            finals.append([])
-        finals[-1].extend([i["choice_text"] for i in model.run_prompt(p)])
+        result = model.run_prompt(p, temperature=0)
+        result_all_choice_text = [i["choice_text"] for i in result]
+        res = strip_complex(result_all_choice_text[0])
+        if not is_number(res):
+            print("flagged!", res)
+            res = text2int_simple(res)
+        print(res)
+        finals.append(r.check_result(res))
+        # print([i["choice_text"] for i in model.run_prompt(p, temperature=0)])
+        # print("-----------------------------------------------")
+        # if len(finals[-1]) >= len(scenarios_newprice):
+        #     finals.append([])
+        # finals[-1].extend([i["choice_text"] for i in model.run_prompt(p, temperature=0)])
 
     print(finals)
-    
-    

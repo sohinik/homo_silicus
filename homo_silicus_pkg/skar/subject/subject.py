@@ -1,5 +1,6 @@
 from skar.subject.endowments import Endowment
 
+preset_parameters = set(["ages", "genders", "races", "incomes", "political", "name"])
 
 class Subject:
     """
@@ -15,13 +16,14 @@ class Subject:
         self._id = id
         self._endowment = endowment
         self._available_parameters = self._endowment.get_available_parameters()
+        self._preset_parameters = preset_parameters.intersection(self._available_parameters)
         self._additional_parameters = list(set(
-            self._available_parameters) - set(["ages", "genders", "races", "incomes", "political"]))
+            self._available_parameters) - preset_parameters)
 
     def set_endowment(self, endowment):
         self._endowment = endowment
 
-    def generate_endoment_prompt(self):
+    def generate_endowment_prompt(self):
         '''
         Generate prompt outlining subject endoment, including personality and additionally
         provided parameters
@@ -35,7 +37,7 @@ class Subject:
             return endowment_prompt
         else:
             all_p = []
-            income_p = ""
+            income_p, name_p = "", ""
             if "ages" in a_params:
                 all_p.append(f"""{endowment["ages"]} years old""")
             if "genders" in a_params:
@@ -46,9 +48,19 @@ class Subject:
                 income_p = f""", earning ${endowment["incomes"]} per year"""
             if "political" in a_params:
                 all_p.append(f"""{endowment["political"]}""")
+            if "name" in a_params:
+                if endowment["name"] == True:
+                    name_p = f""" named Subject {self._id}"""
+                elif endowment["name"] != False:
+                    name_p = f""" named {endowment["name"]}"""
+                else:
+                    name_p = "person"
+                
 
-            # Combine all given parameters into prompt
-            endowment_prompt = f"""You are a {", ".join(all_p)}{" " if len(all_p) > 0 else ""}person named Subject {self._id}{income_p}. """
+            # Combine all preset parameters into prompt
+            endowment_prompt = ""
+            if len(self._preset_parameters) > 0:
+                endowment_prompt = f"""You are a {", ".join(all_p)}{" " if len(all_p) > 0 else ""}{name_p}{income_p}. """
 
             # Additional parameters must be provided as full sentences, to be appended at the end
             for a in self._additional_parameters:

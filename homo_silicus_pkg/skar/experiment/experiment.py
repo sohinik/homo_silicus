@@ -43,8 +43,9 @@ class Experiment:
     def add_round(self, round):
         self._rounds.append(round)
 
-    def add_round(self, task, choices, transition=None, instruction=None):
-        self._rounds.append(Round(task, choices, transition, instruction))
+    def make_round(self, task, choices, transition=None, instruction=None, randomize_choice_ordering=False):
+        self._rounds.append(Round(task, choices, transition,
+                            instruction, randomize_choice_ordering))
 
     def generate_experiment_prompt(self):
         '''
@@ -55,9 +56,25 @@ class Experiment:
 
         experiment_prompt = self._introduction + "\n"
         for s in self._subjects:
-            experiment_prompt_s = experiment_prompt + s.generate_endoment_prompt() + "\n"
+            experiment_prompt_s = experiment_prompt + s.generate_endowment_prompt() + "\n"
             for r in self._rounds:
                 experiment_prompt_r = experiment_prompt_s + r.generate_round_prompt() + "\n"
                 all_experiment_prompts.append(experiment_prompt_r.strip())
+
+        return all_experiment_prompts
+
+    def generate_experiment_prompt_useround(self):
+        '''
+        Generate all the possible experiment prompts, combining each of the subjects with
+        each of the rounds.
+        '''
+        all_experiment_prompts = []
+
+        experiment_prompt = self._introduction + "\n"
+        for s in self._subjects:
+            experiment_prompt_s = experiment_prompt + s.generate_endowment_prompt() + "\n"
+            for r in self._rounds:
+                experiment_prompt_r = experiment_prompt_s + r.generate_round_prompt() + "\n"
+                all_experiment_prompts.append((experiment_prompt_r.strip(), r))
 
         return all_experiment_prompts

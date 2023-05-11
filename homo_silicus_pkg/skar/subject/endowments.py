@@ -11,9 +11,9 @@ class Endowments:
         political (list of str): Political alignment
     """
 
-    def __init__(self, ages=None, genders=None, races=None, incomes=None, political=None):
+    def __init__(self, ages=None, genders=None, races=None, incomes=None, political=None, name=False):
         self._parameter_id = 0
-        self._ages, self._genders, self._races, self._incomes, self._political = None, None, None, None, None
+        self._ages, self._genders, self._races, self._incomes, self._political, self._name = None, None, None, None, None, name
 
         self._additional_parameters = {}
         self._available_parameters = {}
@@ -28,6 +28,10 @@ class Endowments:
             self.set_incomes(incomes)
         if political:
             self.set_political(political)
+        if name:
+            if name == True:
+                self.set_name([name])
+            else: self.set_name(name)
 
     def increment_parameter_id(self):
         self._parameter_id = self._parameter_id + 1
@@ -53,6 +57,10 @@ class Endowments:
     def set_political(self, political):
         self._political = political
         self._available_parameters["political"] = political
+
+    def set_name(self, name):
+        self._name = name
+        self._available_parameters["name"] = name
 
     def set_parameter(self, parameters, description, name=None):
         if not name:

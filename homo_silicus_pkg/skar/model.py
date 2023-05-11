@@ -28,7 +28,7 @@ class Model:
         self._timeout_seconds = timeout_seconds
         self._models = models if type(models) == list else [models]
 
-    def run_prompt(self, prompt, num_choices=None):
+    def run_prompt(self, prompt, num_choices=None, temperature=1):
         '''
         Run the given prompt using the model settings set by the class
 
@@ -37,7 +37,8 @@ class Model:
             num_choices (int): Number of most likely tokens to return logprobs for
 
         Raises:
-            ServiceUnavailableError: OpenAI Error, but should continue without raising error
+            ServiceUnavailableError: OpenAI Error, error handling to retry a couple times
+            without raising error
 
         Returns:
             results (list): GPT results for given prompt
@@ -56,7 +57,7 @@ class Model:
                         model=model,
                         prompt=prompt,
                         max_tokens=150,
-                        temperature=0,
+                        temperature=temperature,
                         logprobs=num_choices,
                     )
                     choice_text = choice_raw['choices'][0]['text'].strip()

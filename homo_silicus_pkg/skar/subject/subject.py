@@ -32,7 +32,7 @@ class Subject:
         a_params = self._available_parameters
         endowment = self._endowment.get_endowment()
 
-        # Currently supported automatically: age, gender, race, income, political alignment
+        # Currently supported automatically: preset_parameters (global var, above)
         if len(a_params) == 0:
             return endowment_prompt
         else:
@@ -60,7 +60,7 @@ class Subject:
             # Combine all preset parameters into prompt
             endowment_prompt = ""
             if len(self._preset_parameters) > 0:
-                endowment_prompt = f"""You are a {", ".join(all_p)}{" " if len(all_p) > 0 else ""}{name_p}{income_p}. """
+                endowment_prompt = f"""You are a {", ".join(all_p)}{" " if len(all_p) > 0 else "person"}{name_p}{income_p}. """
 
             # Additional parameters must be provided as full sentences, to be appended at the end
             for a in self._additional_parameters:

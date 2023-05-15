@@ -12,7 +12,7 @@ class Round:
         instruction (str): Optional parameter to add instructions, after task and transition
     """
 
-    def __init__(self, task, choices, transition=None, instruction="Your choices are the following:", randomize_choice_ordering=False):
+    def __init__(self, task, choices, transition=None, instruction="Your choices are the following:", randomize_choice_ordering=False, one_word=True):
         self._task = task
         self._choices = choices
         self._transition = transition
@@ -26,6 +26,10 @@ class Round:
                 new_choices.append(choices[c])
                 self._choices_order[c+1] = i
             self._choices = new_choices
+        self._one_word = one_word
+    
+    def get_choices_order(self):
+        return self._choices_order
 
     def generate_round_prompt(self):
         '''
@@ -40,10 +44,10 @@ class Round:
         if self._instruction:
             round_prompt += self._instruction + "\n"
         for i, c in enumerate(self._choices):
-            round_prompt += str(i+1) + ") " + c + "\n"
+            round_prompt += str(1+i) + ") " + c + "\n"
 
         round_prompt += "\n"
-        round_prompt += f"""What is your choice, with one word: {list(range(1, 1+ len(self._choices)))}:"""
+        round_prompt += f"""What is your choice{", with one word" if self._one_word else ""}: {list(range(1, 1+len(self._choices)))}:""" #1, 1+ 
         return round_prompt
     
     def check_result(self, result):

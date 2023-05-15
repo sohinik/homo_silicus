@@ -1,7 +1,7 @@
 from skar.experiment.experiment import Experiment
 from skar.experiment.round import Round
 from skar.model import Model
-from skar.results.numbers import *
+from skar.analysis.numbers import *
 from skar.subject.endowments import Endowments
 
 """

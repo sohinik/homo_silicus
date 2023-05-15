@@ -51,6 +51,7 @@ def text2int_simple(textnum, numwords={}, strip=False):
     for word in textnum.split():
         if word not in numwords:
             print("Illegal word: " + word) #Exception
+            return None
 
         scale, increment = numwords[word]
         current = current * scale + increment

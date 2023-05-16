@@ -1,6 +1,4 @@
-from skar.subject.endowments import Endowment
-
-preset_parameters = set(["ages", "genders", "races", "incomes", "political", "name"])
+from skar.subject.endowments import Endowment, preset_parameters
 
 class Subject:
     """
@@ -16,7 +14,8 @@ class Subject:
         self._id = id
         self._endowment = endowment
         self._available_parameters = self._endowment.get_available_parameters()
-        self._preset_parameters = preset_parameters.intersection(self._available_parameters)
+        self._preset_parameters = preset_parameters.intersection(
+            self._available_parameters)
         self._additional_parameters = list(set(
             self._available_parameters) - preset_parameters)
 
@@ -55,7 +54,6 @@ class Subject:
                     name_p = f""" named {endowment["name"]}"""
                 else:
                     name_p = "person"
-                
 
             # Combine all preset parameters into prompt
             endowment_prompt = ""

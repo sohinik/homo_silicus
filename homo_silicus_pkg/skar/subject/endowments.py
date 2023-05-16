@@ -1,3 +1,8 @@
+
+preset_parameters = set(
+    ["ages", "genders", "races", "incomes", "political", "name"])
+
+
 class Endowments:
     """
     The Endowments class holds all the available parameters used to set an AI subject's personality.
@@ -31,7 +36,8 @@ class Endowments:
         if name:
             if name == True:
                 self.set_name([name])
-            else: self.set_name(name)
+            else:
+                self.set_name(name)
 
     def increment_parameter_id(self):
         self._parameter_id = self._parameter_id + 1
@@ -102,6 +108,22 @@ class Endowments:
     def get_all_endowments(self):
         return [i for i in self.yield_endowments()]
 
+    def to_dict(self):
+        return self._available_parameters
+
+    def from_dict(d):
+        d_preset = {}
+        for key in d.keys():
+            if key in preset_parameters:
+                d_preset[key] = d[key]
+        e = Endowments(**d_preset)
+        for key in d.keys():
+            if key not in preset_parameters:
+                e.set_parameter(
+                    parameters=d[key], description=key, name=key)
+
+        return e
+
 
 class Endowment:
     """
@@ -116,6 +138,9 @@ class Endowment:
         self._endowment = endowment
         self._available_parameters = list(endowment.keys())
 
+    def __str__(self):
+        return str(self.get_endowment())
+
     def get_endowment(self):
         return self._endowment
 
@@ -125,3 +150,10 @@ class Endowment:
     def set_endowment(self, endowment):
         self._endowment = endowment
         self._available_parameters = list(self._endowment.keys)
+
+    def to_dict(self):
+        return self.get_endowment()
+
+    def from_dict(d):
+        assert set(d.keys()).issubset(preset_parameters)
+        return Endowment(endowment=d)

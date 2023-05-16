@@ -72,6 +72,19 @@ class Model:
                     failure_count += 1
                     time.sleep(self._timeout_seconds)
         return results
+    
+    def to_dict(self):
+        self_dict = {
+            "max_failures": self._max_failures,
+            "timeout_seconds": self._timeout_seconds,
+            "models": self._models
+        }
+        return self_dict
+        
+    def from_dict(d):
+        assert set(d.keys()).issubset({"max_failures", "timeout_seconds", "models"})
+        return Model(**d)
+        
 
 
 if __name__ == "__main__":

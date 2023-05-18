@@ -98,12 +98,12 @@ class Endowments:
         else:
             next_parameter = list(
                 set(self._available_parameters.keys()) - set(iterated_parameters))[0]
-            iterated_parameters.append(next_parameter)
+            # iterated_parameters.append(next_parameter)
             for i in self._available_parameters[next_parameter]:
                 temp_current_endowment = current_endowment.copy()
                 temp_current_endowment[next_parameter] = i
                 yield from self.yield_endowments(
-                    temp_current_endowment, iterated_parameters)
+                    temp_current_endowment, iterated_parameters + [next_parameter])
 
     def get_all_endowments(self):
         return [i for i in self.yield_endowments()]

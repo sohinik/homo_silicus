@@ -1,6 +1,9 @@
 import json
 import sqlite3
 import time
+
+from matplotlib import pyplot as plt
+from skar.analysis.bar_charts import build_bar_chart, build_grouped_bar_chart
 from skar.analysis.numbers import *
 from skar.experiment.round import Round
 from skar.model import Model
@@ -44,8 +47,8 @@ class Surveys:
             (isinstance(i, Model) for i in models))) or isinstance(models, Model)), "models parameter must be a Model object or list of Model objects"
         assert (isinstance(endowments, Endowments)
                 or isinstance(endowments, Endowment)), "endowments parameter must be an Endowment object or Endowments object"
-        assert isinstance(
-            scenarios, list), "scenarios must be a list or strings"
+        assert isinstance(scenarios, str) or isinstance(
+            scenarios, list), "scenarios must be a string or list of strings"
         assert (isinstance(tasks, str) or isinstance(tasks, list)
                 ), "tasks must be a string or list of strings"
         assert isinstance(choices, list), "choices must be a list"
@@ -66,7 +69,8 @@ class Surveys:
         #     endowments, Endowments) else [endowments] # Commented out to aid in JSONizing
         self._endowments = [endowments] if isinstance(
             endowments, Endowment) else endowments
-        self._scenarios = scenarios
+        self._scenarios = scenarios if isinstance(
+            scenarios, list) else [scenarios]
         self._tasks = tasks if isinstance(tasks, list) else [tasks]
 
         # General conversions depending on validation
@@ -172,12 +176,12 @@ class Surveys:
 
         return all_results
 
-    def run_all_write_data(self, database_string=f"../homo_silicus_pkg/skar/data/experiment_{time.time()}.db", flush=False, additional_tables=[]):
+    def run_all_write_data(self, file_name=f"../homo_silicus_pkg/skar/data/experiment_{time.time()}", flush=False, additional_tables=[], analyze=False):
         """
         Run all possible iterations of prompts from class parameters and write to a database.
 
         Args:
-            database_string (str, optional): Name of file to write data to. Defaults based on time
+            file_name (str, optional): Name of file to write data to. Defaults based on time
             flush (bool, optional): Whether to clear database if necessary. Defaults to False
             additional_tables (list, optional): Additional tables to create based on parameter. Defaults to []
 
@@ -188,7 +192,7 @@ class Surveys:
             set(modules)), f"can only make additional tables for: {modules}"
 
         # Initialize tables
-        conn = sqlite3.connect(database_string)
+        conn = sqlite3.connect(file_name+".db")
         cursor = conn.cursor()
         if flush:
             cursor.execute("DROP TABLE IF EXISTS responses")
@@ -224,9 +228,83 @@ class Surveys:
                     locals()[i]), json.dumps(current_results["choice"]), json.dumps(current_results)))
             conn.commit()
 
+        if analyze:
+            self.analyze_results(
+                file_name, additional_tables=additional_tables)
+
         return all_results
 
+    def analyze_results(self, file_name, additional_tables=[]):
+        # Connect to the SQLite database
+        conn = sqlite3.connect(file_name+".db")
+        cursor = conn.cursor()
+
+        # Retrieve the data from the database, table by table
+        for i in additional_tables:
+            if i == "endowment":
+                cursor.execute(f'SELECT {i}, choice FROM {i}')
+                rows = cursor.fetchall()
+
+                # Extract relevant information and organize for plotting
+                data = {}
+                for row in rows:
+                    # Assuming the endowment column stores dictionaries as string representations
+                    endowment = eval(row[0])
+                    choice = row[1]
+                    for key, value in endowment.items():
+                        if key not in data:
+                            data[key] = {}
+                        try:
+                            choice = int(strip_complex(choice))
+                        except:
+                            pass
+                        if value not in data[key]:
+                            data[key][value] = {}
+                        if choice not in data[key][value]:
+                            data[key][value][choice] = 0
+                        data[key][value][choice] += 1
+
+                # Create grouped bar graphs using matplotlib
+                for e, d in data.items():
+                    build_grouped_bar_chart(d, file_name, title=f"Grouped Bar Chart for {i} - {e}", x_axis = "Groups", y_axis = "Count")
+
+            elif i == "temperature":
+                cursor.execute(f'SELECT {i}, choice FROM {i}')
+                rows = cursor.fetchall()
+
+                # Extract relevant information and organize for plotting
+                data = {}
+                for row in rows:
+                    # Assuming the endowment column stores dictionaries as string representations
+                    value = row[0]
+                    choice = row[1]
+                    try:
+                        choice = int(strip_complex(choice))
+                    except:
+                        pass
+                    if value not in data:
+                        data[value] = {}
+                    if choice not in data[value]:
+                        data[value][choice] = 0
+                    data[value][choice] += 1
+
+                build_grouped_bar_chart(data, file_name, title = f"Grouped Bar Chart for {i}", x_axis = "Groups", y_axis = "Count")
+                for e, d in data.items():
+                    build_bar_chart(
+                        d, file_name, title=f"Grouped Bar Chart for {i} - {e}", x_axis="Groups", y_axis="Count")
+            else:
+                print(f"Sorry, implementation for {i} is in progress!")
+
+        # Step 5: Close the database connection
+        conn.close()
+
     def to_json(self, file_name):
+        """
+        Convert self to a JSON file
+
+        Args:
+            file_name (str): File name to write JSON to
+        """
         def serialize(obj):
             """
             Serializer to help handle non-JSON-serializable classes
@@ -237,12 +315,26 @@ class Surveys:
 
             return obj.__dict__
 
+        assert file_name.endswith(".json"), "given file must be of type JSON"
+
         with open(file_name, 'w') as f:
             print({"Surveys": self})
             f.write(json.dumps({"Surveys": self}, default=serialize))
             f.close()
 
     def from_json(file_name):
+        """
+        Create Surveys object from JSON file
+
+        Args:
+            file_name (str): File name to build object from
+
+        Raises:
+            Exception: Working with JSON incorrectly
+
+        Returns:
+            Surveys: Surveys class object built from JSON file
+        """
         json_file = open(file_name)
         json_obj = json.load(json_file)
         try:
@@ -254,9 +346,11 @@ class Surveys:
         models, endowments = None, None
         for key in json_obj:
             if key == "_models":
-                models = Model.from_dict(json_obj[key]) if isinstance(json_obj[key], Model) else [Model.from_dict(i) for i in json_obj[key]]
+                models = Model.from_dict(json_obj[key]) if isinstance(
+                    json_obj[key], Model) else [Model.from_dict(i) for i in json_obj[key]]
             elif key == "_endowments":
-                endowments = Endowments.from_dict(json_obj[key]) # Check if Endowment object?
+                endowments = Endowments.from_dict(
+                    json_obj[key])  # Check if Endowment object?
             elif key[0] == "_":
                 if key[1:] in class_parameters:
                     json_obj_cleaned[key[1:]] = json_obj[key]

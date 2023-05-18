@@ -1,0 +1,60 @@
+{
+    "Surveys": {
+        "_models": [
+            {
+                "max_failures": 4,
+                "timeout_seconds": 30,
+                "models": [
+                    "text-davinci-003"
+                ]
+            }
+        ],
+        "_endowments": {
+            "name": [
+                "Sarah Smith",
+                "Parvita Patel",
+                "Cho Chang",
+                "Dior Delacour"
+            ],
+            "taste preference": [
+                "",
+                "You love sweet flavors.",
+                "You love salty flavors.",
+                "You love fruity flavors.",
+                "You love floral flavors."
+            ]
+        },
+        "_scenarios": [
+            "You are checking out a new, local ice cream parlour."
+        ],
+        "_tasks": [
+            "Which flavor of ice cream will you get?"
+        ],
+        "_temperatures": [
+            0
+        ],
+        "_logprobs": 3,
+        "_choices": [
+            [
+                "vanilla",
+                "chocolate",
+                "strawberry",
+                "lavender",
+                "french lavender",
+                "kulfi",
+                "matcha",
+                "sesame",
+                "rum"
+            ]
+        ],
+        "_order": [
+            "subject",
+            "scenario",
+            "round"
+        ],
+        "_num_runs": 1,
+        "_randomize_choice_ordering": false,
+        "_one_word": true,
+        "_subject_id": 21
+    }
+}

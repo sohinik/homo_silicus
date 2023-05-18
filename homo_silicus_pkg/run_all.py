@@ -1,3 +1,5 @@
+from skar.examples.flights_survey_writedata import run_flights_survey_writedata
+from skar.examples.flights_survey_dataanalysis import run
 from skar.examples.ice_cream_conjoint import run_ice_cream
 from skar.examples.charness_rabin import run_experiment_charness_rabin
 from skar.examples.charness_rabin_IO import run_experiment_charness_rabin_IO
@@ -11,7 +13,9 @@ from skar.examples.samuelson_zeckhauser import run_experiment_samuelson_zeckhaus
 # run_experiment_charness_rabin_IO()
 # run_experiment_charness_rabin_survey()
 # run_experiment_charness_rabin_survey_writedata()
-run_experiment_charness_rabin_survey_json()
+# run_experiment_charness_rabin_survey_json()
 # run_experiment_kkt()
 # run_experiment_samuelson_zeckhauser()
 # run_ice_cream()
+run_flights_survey_writedata()
+# run()
